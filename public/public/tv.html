@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TV Display</title>
+<style>
+body{margin:0;background:black;overflow:hidden;}
+video{width:100vw;height:100vh;object-fit:contain;}
+#logo{position:fixed;top:20px;right:20px;height:80px;}
+#ticker{
+position:fixed;
+bottom:0;
+width:100%;
+background:rgba(0,0,0,0.8);
+color:white;
+font-size:25px;
+white-space:nowrap;
+overflow:hidden;
+}
+#ticker span{
+display:inline-block;
+padding-left:100%;
+animation:scroll 20s linear infinite;
+}
+@keyframes scroll{
+from{transform:translateX(0);}
+to{transform:translateX(-100%);}
+}
+</style>
+</head>
+<body>
+
+<video id="player" autoplay muted></video>
+<img id="logo">
+<div id="ticker"><span id="text"></span></div>
+
+<script>
+let player=document.getElementById("player");
+
+async function loadAll(){
+const vidRes=await fetch("/videos");
+const vidData=await vidRes.json();
+
+if(vidData.length>0){
+let latestVideo=vidData[vidData.length-1];
+player.src="/uploads/"+latestVideo+"?t="+Date.now();
+player.load();
+player.muted=true;
+player.play().catch(()=>{});
+}
+
+const setRes=await fetch("/settings");
+const setData=await setRes.json();
+document.getElementById("text").innerText=setData.tickerText||"";
+document.getElementById("logo").src=setData.logoUrl||"";
+}
+
+setInterval(loadAll,10000);
+loadAll();
+</script>
+
+</body>
+</html>
